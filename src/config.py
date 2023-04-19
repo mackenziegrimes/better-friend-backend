@@ -1,6 +1,7 @@
 from os import getenv
+from flask import Config
 
-class Config: 
+class AppConfig(Config): 
     AUTH_KEY: str
     PORT: str
     DB_HOST: str 
@@ -8,7 +9,6 @@ class Config:
     DB_PASS: str 
     DB_PORT: str
 
-    # TODO this isn't successfully pulling env vars, why?
     def __init__(self) -> None:
         AUTH_KEY = getenv("AUTH_KEY")
         PORT = getenv("PORT")

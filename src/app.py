@@ -1,14 +1,13 @@
-from flask import Flask
+from flask import Flask, Config, logging
 
-from .config import Config
+from .config import AppConfig
 from .health import bp as health_bp
 from .persons import bp as persons_bp
 
-def create_app(test_config: Config = Config):
+def create_app(test_config: Config = AppConfig()):
         app = Flask(__name__)
         app.config.from_object(test_config)
         
-        app.logger.info(f"Loaded config: {str(test_config)}")
         app.register_blueprint(health_bp)
         app.register_blueprint(persons_bp, url_prefix="/persons")
     
@@ -16,6 +15,6 @@ def create_app(test_config: Config = Config):
         
 
 if __name__ == "__main__":
-    app = create_app()
-    # app.logger.info(f"Loaded config: {str(config)}")
+    config = AppConfig()
+    app = create_app(test_config=config)
     app.run(host="0.0.0.0", port=config.PORT)
