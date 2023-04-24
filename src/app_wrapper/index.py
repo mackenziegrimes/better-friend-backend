@@ -1,7 +1,14 @@
-from flask import Flask, Config, logging
+from flask import Flask, Config
 from flask.typing import RouteCallable
-from typing import Sequence, Optional
 
+from typing import Sequence, Optional, List
+
+from ..app_config import AppConfig
+from ..routes import (
+    health,
+    persons,
+    users
+)
 
 class AppWrapper:
     app: Flask
@@ -10,18 +17,23 @@ class AppWrapper:
         self.app = Flask(__name__)
         self._configs(test_config)
 
+        # blueprints
+        self.app.register_blueprint(health.bp, url_prefix="/health")
+        self.app.register_blueprint(users.bp, url_prefix="/users")
+        self.app.register_blueprint(persons.bp, url_prefix="/persons")
+
     # load configs into flask app
     def _configs(self, config: Optional[Config] = None) -> None:
-        print(f"Received config {config}")
-        if config is None:
-            self.app.config.from_file("../.env")
+        if config is not None:
+            self.app.config.from_object(config)
 
-        for config, value in config:
-            self.app.config[config.upper()] = value
-
+        else:
+            new_config = AppConfig()
+            self.app.config.from_object(new_config)
+            
     def add_endpoint(
         self,
-        endpoint: [str] = None,
+        endpoint: List[str] = None,
         endpoint_name: str = None,
         handler: Optional[RouteCallable] = None,
         methods: Optional[Sequence[str]] = ["GET"],
