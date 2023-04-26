@@ -1,6 +1,7 @@
 from .app_wrapper import AppWrapper
 
-app = AppWrapper().app
+wrapper = AppWrapper()
+app = wrapper.app
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

@@ -1,15 +1,10 @@
 from flask import Blueprint
 from typing import Optional, Sequence
-
 from asyncio import sleep
 
-bp = Blueprint("users", __name__)
+from ...firestore import User
 
-class User():
-    id: str
-    email: str
-    firstName: str
-    lastName: str
+bp = Blueprint("users", __name__)
 
 # TODO connection to DB
 @bp.route("", methods=["GET"])

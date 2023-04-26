@@ -7,6 +7,7 @@ class AppConfig(dict):
     DB_HOSTNAME: str
     DB_USERNAME: str
     DB_PASSWORD: str
+    PROJECT_ID: str
 
     def __init__(self):
          # load environment variables from .env
@@ -16,3 +17,5 @@ class AppConfig(dict):
         self.DB_HOSTNAME = os.getenv("DB_HOSTNAME")
         self.DB_USERNAME = os.getenv("DB_USERNAME")
         self.DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+        self.PROJECT_ID = os.getenv("PROJECT_ID")

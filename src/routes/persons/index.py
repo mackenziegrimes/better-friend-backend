@@ -2,19 +2,14 @@ from asyncio import sleep
 from flask import Blueprint
 from typing import Optional, Sequence
 
-from ..connections import bp as connections_bp, Connection
+from ...firestore import Connection, Person
 
-
-class Person:
-    id: str
-    name: Optional[str]
-    type: str
-    frequencyDays: int
+# from ..connections import bp as connections_bp
 
 
 bp = Blueprint("persons", __name__)
 # TODO does this construct the persons/:personId/connections url?
-bp.register_blueprint(connections_bp) 
+# bp.register_blueprint(connections_bp)
 
 
 # TODO: add queryString param userId
