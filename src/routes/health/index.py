@@ -7,10 +7,10 @@ bp = Blueprint("main", __name__)
 @bp.route("", methods=["GET"])
 def index():
     try:
-        collections = get_db().collection("users").count().get()
-        print(f"Collections: {(collections.count)}")
+        users = get_db().collection("users").count().get()
+        current_app.logger.info(f"User count: {(len(users))}")
 
-        if collections is not None and collections.count > 0:
+        if users is not None and len(users) > 0:
             return {"status": "OK"}
         else:
             raise Exception("No collections found in Firestore")

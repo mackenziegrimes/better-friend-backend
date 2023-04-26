@@ -25,9 +25,12 @@ source .venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
+### Create .env file
+See .env.example
+
 ## Run
 ```
-flask --app src/app.py run
+flask run
 ```
 
 
