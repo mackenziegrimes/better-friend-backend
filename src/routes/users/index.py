@@ -1,7 +1,7 @@
-from flask import Blueprint, current_app, Response
+from quart import Blueprint, current_app, Response
 from typing import Optional, Sequence
 
-from ...firestore import User, get_db
+from ...firestore import User, Firestore
 
 bp = Blueprint("users", __name__)
 
@@ -9,7 +9,8 @@ bp = Blueprint("users", __name__)
 @bp.route("", methods=["GET"])
 async def get_all_users() -> Optional[Sequence[User]]:
     # TODO [nice to have]: return user IDs in response body
-    users: list = [user.to_dict() for user in get_db().collection("users").get()]
+    db = Firestore().db
+    users: list = [user.to_dict() for user in await db.collection("users").get()]
 
     current_app.logger.info(f"Query returned users: {users}")
     return {"users": users}
@@ -25,7 +26,8 @@ async def create_user() -> Optional[User]:
 async def get_user(id: str) -> Optional[User]:
     current_app.logger.debug(f"Now getting user ID {id}")
     try:
-        user = get_db().collection("users").document(id).get().to_dict()
+        db = Firestore().db
+        user = await db.collection("users").document(id).get().to_dict()
         current_app.logger.info(f"Found user: {user}")
 
         if user is None:

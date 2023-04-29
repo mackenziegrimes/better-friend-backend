@@ -1,30 +1,29 @@
 from google.cloud import firestore
-from google import auth
-from flask import current_app
-from flask.globals import g
+import google.auth as auth
+from quart import current_app, Config
 from typing import Optional
 
+from ..app_config import AppConfig
 
-def get_db() -> firestore.Client:
-    current_app.logger.debug(f"g: {g}")
-    if "db" not in g:
-        # get project_id from Flask global cache
-        credentials, project_id = auth.default()
+
+class Firestore:
+    db: firestore.Client
+
+    def __init__(self):
+        app_config: Config = current_app.config
+        credentials, project_id = auth.load_credentials_from_file(
+            app_config.get("GOOGLE_APPLICATION_CREDENTIALS")
+        )
         current_app.logger.debug(f"Loaded credentials for project_id: {project_id}")
 
         if type(project_id) is str:
-            # TODO this is being invoked but global cache does not have db
-            current_app.logger.debug("Now storing firestore.Client in global")
+            self.db = firestore.Client(
+                project=project_id,
+                credentials=credentials,
+                client_info={"api_key": app_config.get("API_KEY")},
+            )
 
-            # TODO send config API KEY as well
-            g.db = firestore.Client(project=project_id, credentials=credentials)
-
-    return g.db
-
-
-# @current_app.teardown_appcontext()
-def teardown_db(exception):
-    db: firestore.Client = g.pop("db", None)
-
-    if db is not None:
-        db.close()
+    # @current_app.teardown_appcontext()
+    def teardown(self):
+        if self.db is not None:
+            self.db.close()

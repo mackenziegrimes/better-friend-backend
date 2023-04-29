@@ -1,5 +1,5 @@
-from flask import Blueprint, abort, current_app
-from ...firestore import get_db
+from quart import Blueprint, abort, current_app
+from ...firestore import Firestore
 
 bp = Blueprint("main", __name__)
 
@@ -7,7 +7,8 @@ bp = Blueprint("main", __name__)
 @bp.route("", methods=["GET"])
 def index():
     try:
-        users = get_db().collection("users").count().get()
+        db = Firestore().db
+        users = db.collection("users").count().get()
         current_app.logger.info(f"User count: {(len(users))}")
 
         if users is not None and len(users) > 0:

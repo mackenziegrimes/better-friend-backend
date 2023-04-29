@@ -1,5 +1,5 @@
 from asyncio import sleep
-from flask import Blueprint
+from quart import Blueprint
 from typing import Optional, Sequence
 
 from ...firestore import Connection, Person

@@ -1,27 +1,29 @@
-from flask import Blueprint
+from quart import Blueprint
 from asyncio import sleep
 from typing import Optional, Sequence
 
 from ...firestore import Connection
 from ..persons import bp as persons_bp
 
-bp = Blueprint("connections", __name__) # TODO can this be cleaned up?
+bp = Blueprint("connections", __name__)  # TODO can this be cleaned up?
 
 
 # TODO: add queryString param userId
 @persons_bp.route("/<string:id>/connections", methods=["GET"])
-def get_all_connections() -> Optional[Sequence[Connection]]:
+async def get_all_connections() -> Optional[Sequence[Connection]]:
     # TODO actually get persons
+    sleep(0.1)
     return {"connections": []}
 
 
 @persons_bp.route("/<string:id>/connections", methods=["POST"])
-def create_connect() -> Optional[Connection]:
+async def create_connect() -> Optional[Connection]:
     # TODO actually create connection
-    connection = { 
-        "id": '12345', 
-        "personId": 'personId123', 
-        "date": '2023-04-23T00:00:01Z',
+    sleep(0.1)
+    connection = {
+        "id": "12345",
+        "personId": "personId123",
+        "date": "2023-04-23T00:00:01Z",
     }
     return connection
 
@@ -40,6 +42,7 @@ async def get_connection(person_id: str, connection_id: str) -> Optional[Connect
 
     print(f"Found connection: {connection}")
     return connection
+
 
 # TODO support delete
 async def delete_connection(person_id: str, connection_id: str) -> bool:

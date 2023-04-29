@@ -1,7 +1,7 @@
 # better-friend
 > Simple relationship tracking app to help you be a better friend.
 
-- Built on Python Flask API
+- Built on Python Flask/Quart API
 
 Author: Mackenzie Grimes
 
@@ -30,7 +30,7 @@ See .env.example
 
 ## Run
 ```
-flask run
+quart run
 ```
 
 
