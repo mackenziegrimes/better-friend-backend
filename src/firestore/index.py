@@ -14,7 +14,6 @@ class Firestore:
         credentials, project_id = auth.load_credentials_from_file(
             app_config.get("GOOGLE_APPLICATION_CREDENTIALS")
         )
-        current_app.logger.debug(f"Loaded credentials for project_id: {project_id}")
 
         if type(project_id) is str:
             self.db = firestore.Client(

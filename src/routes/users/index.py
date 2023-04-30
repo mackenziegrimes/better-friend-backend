@@ -23,7 +23,6 @@ def get_collection() -> CollectionReference:
 @bp.route("", methods=["GET"])
 async def get_all_users() -> Optional[Sequence[User]]:
     response: Sequence[DocumentReference] = get_collection().list_documents()
-    print(f"response: {response}")
     users: list = []
     for user_doc in response:
         user_dict = user_doc.get().to_dict()

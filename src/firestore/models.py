@@ -3,8 +3,8 @@ from typing import Optional
 
 class Connection:
     id: str
-    personId: str
-    date: str  # TODO date might not be a string
+    createdAt: int
+    notes: str
 
 
 class Person:
