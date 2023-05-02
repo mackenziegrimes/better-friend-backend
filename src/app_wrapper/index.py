@@ -18,7 +18,9 @@ class AppWrapper:
         # blueprints
         self.app.register_blueprint(health.bp, url_prefix="/health")
         self.app.register_blueprint(users.bp, url_prefix="/users")
-        self.app.register_blueprint(persons.bp, url_prefix="/persons")
+        self.app.register_blueprint(
+            persons.bp, url_prefix="/users/<string:user_id>/persons"
+        )
 
     # load configs into quart app
     def _configs(self, config: Optional[Config] = None) -> None:

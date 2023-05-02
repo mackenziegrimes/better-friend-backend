@@ -10,19 +10,16 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from typing import Optional, Sequence
 from datetime import datetime
 
-from ...firestore import User, Firestore
+from ...firestore import User, Firestore, get_collection
 
 bp = Blueprint("users", __name__)
-
-
-def get_collection() -> CollectionReference:
-    db = Firestore().db
-    return db.collection("users")
 
 
 @bp.route("", methods=["GET"])
 async def get_all_users() -> Optional[Sequence[User]]:
     response: Sequence[DocumentReference] = get_collection().list_documents()
+
+    # loop through Users DocumentReferences and construct User model objects
     users: list = []
     for user_doc in response:
         user_dict = user_doc.get().to_dict()
@@ -42,14 +39,15 @@ async def create_user() -> Optional[User]:
     request_body["createdAt"] = datetime.utcnow()
 
     # TODO validate shape of request body matches User
-    response = get_collection().add(request_body)
+    user_doc: DocumentReference = get_collection().document()
+    response = user_doc.create(request_body)
 
-    user_reference: DocumentReference = response[1]
-    print(f"Created user: {user_reference}")
+    user_snapshot: DocumentSnapshot = user_doc.get()
+    print(f"Created user: {user_snapshot.to_dict()}")
 
-    # there _should_ be an easier way to retrieve the DocumentReference data and its id
-    user = user_reference.get().to_dict()
-    user["id"] = user_reference.id
+    # there _should_ be an easier way to retrieve the DocumentSnapshot data and its id
+    user = user_snapshot.to_dict()
+    user["id"] = user_snapshot.id
     return user
 
 
@@ -82,11 +80,11 @@ async def patch_user(id: str) -> Optional[User]:
     sanitized_body["updatedAt"] = datetime.utcnow()
 
     try:
-        response: WriteResult = get_collection().document(id).update(sanitized_body)
+        user_doc: DocumentReference = get_collection().document(id)
+        response: WriteResult = user_doc.update(sanitized_body)
 
-        user_reference: DocumentReference = get_collection().document(id)
-        updated_user: dict = user_reference.get().to_dict()
-        updated_user["id"] = user_reference.id
+        updated_user: dict = user_doc.get().to_dict()
+        updated_user["id"] = user_doc.id
 
         return updated_user
 
@@ -101,15 +99,18 @@ async def delete_user(id: str) -> Optional[User]:
 
     try:
         # save user in memory briefly so we can return it to client after deleting
-        user: dict = get_collection().document(id).get().to_dict()
-        if user is None:
+        user_doc: DocumentReference = get_collection().document(id)
+        user_snapshot: DocumentSnapshot = user_doc.get()
+        if not user_snapshot.exists:
             return Response(status=404)
 
-        response: Timestamp = get_collection().document(id).delete()
+        response: Timestamp = user_doc.delete()
         current_app.logger.debug(f"User id {id} deleted at {response}")
 
-        user["id"] = id  # manually append Document id
-        return user
+        # manually append Document id to return object
+        user_data = user_snapshot.to_dict()
+        user_data["id"] = user_snapshot.id
+        return user_data
 
     except Exception as e:
         current_app.logger.info(f"Failed to find user id {id} to delete: {e}")
