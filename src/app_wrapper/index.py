@@ -5,7 +5,7 @@ from typing import Sequence, Optional, List
 
 from ..app_config import AppConfig
 from ..firestore import Firestore
-from ..routes import health, persons, users
+from ..routes import health, persons, users, connections
 
 
 class AppWrapper:
@@ -15,11 +15,15 @@ class AppWrapper:
         self.app = Quart(__name__)
         self._configs(test_config)
 
-        # blueprints
+        # define blueprints and their base url paths
         self.app.register_blueprint(health.bp, url_prefix="/health")
         self.app.register_blueprint(users.bp, url_prefix="/users")
         self.app.register_blueprint(
             persons.bp, url_prefix="/users/<string:user_id>/persons"
+        )
+        self.app.register_blueprint(
+            connections.bp,
+            url_prefix="/users/<string:user_id>/persons/<string:person_id>/connections",
         )
 
     # load configs into quart app
@@ -30,22 +34,6 @@ class AppWrapper:
         else:
             new_config = AppConfig()
             self.app.config.from_object(new_config)
-
-    def add_endpoint(
-        self,
-        endpoint: List[str] = None,
-        endpoint_name: str = None,
-        handler: Optional[RouteCallable] = None,
-        methods: Optional[Sequence[str]] = ["GET"],
-        *args,
-        **kwargs,
-    ) -> None:
-        self.app.add_url_rule(
-            rule=endpoint_name,
-            endpoint=endpoint,
-            view_func=handler,
-            **kwargs,
-        )
 
     def run(self, **kwargs) -> None:
         self.app.run(**kwargs)

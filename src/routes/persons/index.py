@@ -7,7 +7,6 @@ from google.cloud.firestore import (
     CollectionReference,
     DocumentSnapshot,
 )
-from google.cloud.firestore_v1.types import WriteResult
 
 from ...firestore import Connection, Person, get_collection
 
@@ -16,11 +15,7 @@ bp = Blueprint("persons", __name__)
 
 def get_user_reference(user_id: str) -> Optional[DocumentReference]:
     user_reference: DocumentReference = get_collection().document(user_id)
-
-    if not user_reference.get().exists:
-        return None
-
-    return user_reference
+    return user_reference if user_reference.get().exists else None
 
 
 @bp.route("", methods=["GET"])
@@ -90,7 +85,9 @@ async def get_person(user_id: str, person_id: str) -> Optional[Person]:
     if not person_snapshot.exists:
         return Response(status=404)
 
-    return person_snapshot.to_dict()
+    person = person_snapshot.to_dict()
+    person["id"] = person_snapshot.id
+    return person
 
 
 @bp.route("<string:person_id>", methods=["PATCH"])
@@ -115,7 +112,7 @@ async def patch_person(user_id: str, person_id: str):
         person_doc: DocumentReference = user_reference.collection("persons").document(
             person_id
         )
-        response: WriteResult = person_doc.update(sanitized_body)
+        person_doc.update(sanitized_body)
 
         # Construct Person model object and return
         updated_person: dict = person_doc.get().to_dict()
@@ -124,7 +121,7 @@ async def patch_person(user_id: str, person_id: str):
         return updated_person
 
     except Exception as e:
-        current_app.logger.error(f"Failed to update user {id}: {e}")
+        current_app.logger.error(f"Failed to update person {id}: {e}")
         return Response(status=400)
 
 
@@ -148,9 +145,9 @@ async def delete_person(user_id: str, person_id: str):
         response: Timestamp = person_doc.delete()
 
         # manually append Document id before returning deleted Person
-        person_data = person_snapshot.to_dict()
+        person_data: dict = person_snapshot.to_dict()
         person_data["id"] = person_snapshot.id
-        return person_data
+        return Response(person_data, status=204)
 
     except Exception as e:
         current_app.logger.info(f"Failed to find person {person_id} to delete: {e}")

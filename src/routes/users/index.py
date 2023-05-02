@@ -4,7 +4,6 @@ from google.cloud.firestore import (
     DocumentReference,
     DocumentSnapshot,
 )
-from google.cloud.firestore_v1.types import WriteResult
 from google.protobuf.timestamp_pb2 import Timestamp
 
 from typing import Optional, Sequence
@@ -81,7 +80,7 @@ async def patch_user(id: str) -> Optional[User]:
 
     try:
         user_doc: DocumentReference = get_collection().document(id)
-        response: WriteResult = user_doc.update(sanitized_body)
+        user_doc.update(sanitized_body)
 
         updated_user: dict = user_doc.get().to_dict()
         updated_user["id"] = user_doc.id
