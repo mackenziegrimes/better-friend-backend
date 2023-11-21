@@ -5,8 +5,10 @@
             "type": "python",
             "request": "launch",
             "name": "Launch",
-            "cwd": "${workspaceFolder}/src",
-            "program": "app.py"
+            "env": {
+                "PYTHONPATH": "${env:PYTHONPATH}:${workspaceFolder}/src"
+            },
+            "program": "src/app.py"
         }
     ]
 }
