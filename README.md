@@ -24,7 +24,7 @@ Discrete connections made with a certain friend/family member/colleague, stamped
 
 ## Install
 ### Prerequisites
-- Python 3.8+
+- Python 3.9+
 - docker CLI
 
 ### Create virtualenv

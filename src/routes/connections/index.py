@@ -1,22 +1,23 @@
-from quart import Blueprint, current_app, Request, Response, request
+"""Connections module to fetch data without worrying about DB connection"""
 from datetime import datetime
 from typing import Optional, Sequence
 
+from quart import Blueprint, current_app, Request, Response, request
 from google.cloud.firestore import (
     DocumentReference,
     DocumentSnapshot,
     CollectionReference,
 )
 from google.cloud.firestore_v1.types import WriteResult
-
-from ...firestore import Connection, Person, get_collection
+from src.firestore import Connection, Person, Firestore
 
 bp = Blueprint("connections", __name__)
+# pylint: disable=broad-exception-caught
 
 
 def get_person_reference(user_id: str, person_id: str) -> Optional[DocumentReference]:
     person_reference: DocumentReference = (
-        get_collection().document(user_id).collection("persons").document(person_id)
+        Firestore.get_collection().document(user_id).collection("persons").document(person_id)
     )
     return person_reference if person_reference.get().exists else None
 

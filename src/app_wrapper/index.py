@@ -1,16 +1,16 @@
+"""Wrapper to create, and setup, new Quart server instance"""
+from typing import Sequence, Optional, List
+
 from quart import Quart, Config
 from quart.typing import RouteCallable
 
-from typing import Sequence, Optional, List
-
-from ..app_config import AppConfig
-from ..firestore import Firestore
-from ..routes import health, persons, users, connections
+from src.app_config import AppConfig
+from src.firestore import Firestore
+from src.routes import health, persons, users, connections
 
 
 class AppWrapper:
-    app: Quart
-
+    """Module wrapping Quart app that creates new Quart app and auto-wires all routes"""
     def __init__(self, test_config: Optional[Config] = None):
         self.app = Quart(__name__)
         self._configs(test_config)
@@ -36,4 +36,5 @@ class AppWrapper:
             self.app.config.from_object(new_config)
 
     def run(self, **kwargs) -> None:
+        """Start Quart app"""
         self.app.run(**kwargs)

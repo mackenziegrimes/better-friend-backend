@@ -1,4 +1,4 @@
-from .app_wrapper import AppWrapper
+from src.app_wrapper import AppWrapper
 
 wrapper = AppWrapper()
 app = wrapper.app

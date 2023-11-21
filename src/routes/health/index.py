@@ -1,11 +1,15 @@
+"""Health route business module"""
 from quart import Blueprint, abort, current_app
-from ...firestore import Firestore
+from src.firestore import Firestore
 
 bp = Blueprint("main", __name__)
+# pylint: disable=broad-exception-caught
+
 
 
 @bp.route("", methods=["GET"])
 def index():
+    """Base /health endpoint"""
     try:
         db = Firestore().db
         users = db.collection("users").count().get()
@@ -13,8 +17,8 @@ def index():
 
         if users is not None and len(users) > 0:
             return {"status": "OK"}
-        else:
-            raise Exception("No collections found in Firestore")
+
+        raise RuntimeError("No collections found in Firestore")
 
     except Exception as e:
         current_app.log_exception(f"Failed to connection to Firestore: {e}")

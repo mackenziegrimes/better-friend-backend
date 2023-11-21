@@ -1,27 +1,31 @@
-from quart import Blueprint, current_app, Request, request, Response
+"""Business logic for /persons resources"""
 from datetime import datetime
 from typing import Optional, Sequence
 
+from quart import Blueprint, current_app, Request, request, Response
 from google.cloud.firestore import (
     DocumentReference,
     CollectionReference,
     DocumentSnapshot,
 )
-
-from ...firestore import Connection, Person, get_collection
+from google.protobuf.timestamp_pb2 import Timestamp
+from src.firestore import Connection, Person, Firestore
 
 bp = Blueprint("persons", __name__)
+# pylint: disable=broad-exception-caught
 
 
-def get_user_reference(user_id: str) -> Optional[DocumentReference]:
-    user_reference: DocumentReference = get_collection().document(user_id)
+
+def _get_user_reference(user_id: str) -> Optional[DocumentReference]:
+    user_reference: DocumentReference = Firestore.get_collection().document(user_id)
     return user_reference if user_reference.get().exists else None
 
 
 @bp.route("", methods=["GET"])
 async def get_all_persons(user_id: str) -> Optional[Sequence[Person]]:
+    """Fetch all Persons records for a user"""
     try:
-        user_reference: Optional[DocumentReference] = get_user_reference(user_id)
+        user_reference: Optional[DocumentReference] = _get_user_reference(user_id)
         if user_reference is None:
             return Response("User not found", status=400)
 
@@ -42,11 +46,12 @@ async def get_all_persons(user_id: str) -> Optional[Sequence[Person]]:
 
 @bp.route("", methods=["POST"])
 async def create_person(user_id: str) -> Optional[Person]:
+    """Create new Person object under this User"""
     data = await request.get_json()
     current_app.logger.info(f"Creating person for user {user_id} with body: {data}")
 
     # TODO validate request body
-    user_reference: Optional[DocumentReference] = get_user_reference(user_id)
+    user_reference: Optional[DocumentReference] = _get_user_reference(user_id)
     if user_reference is None:
         return Response("User not found", status=404)
 
@@ -71,10 +76,11 @@ async def create_person(user_id: str) -> Optional[Person]:
 
 @bp.route("<string:person_id>", methods=["GET"])
 async def get_person(user_id: str, person_id: str) -> Optional[Person]:
+    """/persons/get route: fetch one Person object"""
     current_app.logger.info(f"Getting person_id {person_id} from user {user_id}")
 
     # get base User document which has persons nested collection, if it exists
-    user_reference: Optional[DocumentReference] = get_user_reference(user_id)
+    user_reference: Optional[DocumentReference] = _get_user_reference(user_id)
     if user_reference is None:
         return Response(status=404)
 
@@ -92,11 +98,12 @@ async def get_person(user_id: str, person_id: str) -> Optional[Person]:
 
 @bp.route("<string:person_id>", methods=["PATCH"])
 async def patch_person(user_id: str, person_id: str):
+    """Patch one Persons object"""
     request_body: dict = await request.get_json()
     current_app.logger.info(f"Now updating person {person_id} with body {request_body}")
 
     # get base User document which has persons nested collection, if it exists
-    user_reference: Optional[DocumentReference] = get_user_reference(user_id)
+    user_reference: Optional[DocumentReference] = _get_user_reference(user_id)
     if user_reference is None:
         return Response(status=404)
 
@@ -127,9 +134,10 @@ async def patch_person(user_id: str, person_id: str):
 
 @bp.route("<string:person_id>", methods=["DELETE"])
 async def delete_person(user_id: str, person_id: str):
+    """Delete one Person from the DB"""
     current_app.logger.info(f"Now deleting person id {person_id} for user {user_id}")
 
-    user_reference: Optional[DocumentReference] = get_user_reference(user_id)
+    user_reference: Optional[DocumentReference] = _get_user_reference(user_id)
     if user_reference is None:
         return Response(status=404)
 
